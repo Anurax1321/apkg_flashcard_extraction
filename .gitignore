@@ -1,0 +1,7 @@
+# ignore entire folders
+data/
+extracted_apkg/
+final/
+
+# also ignore any .apkg decks just in case
+*.apkg

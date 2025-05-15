@@ -1,16 +1,73 @@
-# This is a sample Python script.
+import zipfile
+import sqlite3
+import os
+import re
+import html
 
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+def extract_apkg(apkg_path, extract_dir):
+    """
+    Extracts the .apkg file (a zip archive) into the given directory.
+    """
+    with zipfile.ZipFile(apkg_path, 'r') as z:
+        z.extractall(extract_dir)
 
+def clean_text(text):
+    """
+    Cleans Anki field text by:
+      - Removing cloze markers like {{c1::…}}
+      - Stripping HTML tags
+      - Unescaping HTML entities
+    """
+    text = re.sub(r'\{\{c\d+::|}}', '', text)   # remove cloze
+    text = re.sub(r'<[^>]+>', '', text)          # strip HTML tags
+    return html.unescape(text).strip()           # unescape entities
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
+def read_apkg_to_txt(apkg_path, output_txt):
+    """
+    Reads the .apkg at apkg_path and writes all Q/A pairs
+    to output_txt (utf-8).
+    """
+    extract_dir = 'extracted_apkg'
+    os.makedirs(extract_dir, exist_ok=True)
+    extract_apkg(apkg_path, extract_dir)
 
+    # Path to the SQLite DB inside the extracted folder
+    db_path = os.path.join(extract_dir, 'collection.anki2')
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
 
-# Press the green button in the gutter to run the script.
+    # The `flds` column holds all fields separated by the \x1f character
+    cursor.execute("SELECT flds FROM notes")
+    rows = cursor.fetchall()
+
+    with open(output_txt, 'w', encoding='utf-8') as f:
+        for idx, (flds,) in enumerate(rows, start=1):
+            parts = flds.split('\x1f')
+            question = clean_text(parts[0]) if len(parts) >= 1 else ''
+            answer   = clean_text(parts[1]) if len(parts) >= 2 else ''
+            f.write(f"Flashcard {idx}\n")
+            f.write(f"Question: {question}\n")
+            f.write(f"Answer: {answer}\n\n")
+
+    conn.close()
+    print(f"Extracted {len(rows)} flashcards to {output_txt}")
+
 if __name__ == '__main__':
-    print_hi('PyCharm')
+    apkg_file = r"C:\Users\jyoth\PycharmProjects\rohan_flashcards\data\JAnki_STEP_2_internal_MedicinePART_I.apkg"
+    output_txt = r'C:\Users\jyoth\PycharmProjects\rohan_flashcards\extracted_apkg\flashcards_extracted.txt'
+    read_apkg_to_txt(apkg_file, output_txt)
 
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+    with open(r"C:\Users\jyoth\PycharmProjects\rohan_flashcards\final\flashcards_extracted.txt", 'r', encoding='utf-8') as f:
+        content = f.read()  # read the entire file into one string
+        # or, to read line by line:
+        # lines = f.readlines()   # returns a list of lines
+    flash = content.split("Flashcard")
+    # print(content)
+    # print(flash[0])
+    print(flash[1])
+    # print(flash[2])
+    # print(flash[3])
+    question = flash[1].split("Question: ")[1].split("?")[0] + "?"
+    ans = flash[1].split("Question: ")[1].split("?")[1]
+    print(f"question: {question}")
+    print(f"ans: {ans}")
