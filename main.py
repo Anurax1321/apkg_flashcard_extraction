@@ -41,20 +41,31 @@ def read_apkg_to_txt(apkg_path, output_txt):
     rows = cursor.fetchall()
 
     with open(output_txt, 'w', encoding='utf-8') as f:
+        # for idx, (flds,) in enumerate(rows, start=1):
+        #     parts = flds.split('\x1f')
+        #     if idx in (1, 2):
+        #         print(parts)
+        #     question = clean_text(parts[0]) if len(parts) >= 1 else ''
+        #     answer   = clean_text(parts[1]) if len(parts) >= 2 else ''
+        #     f.write(f"Flashcard {idx}\n")
+        #     f.write(f"Question: {question}\n")
+        #     f.write(f"Answer: {answer}\n\n")
         for idx, (flds,) in enumerate(rows, start=1):
-            parts = flds.split('\x1f')
-            question = clean_text(parts[0]) if len(parts) >= 1 else ''
-            answer   = clean_text(parts[1]) if len(parts) >= 2 else ''
+            parts = flds.split('?')
+            if idx in (1, 2):
+                print(parts)
+            question = clean_text(''.join(parts[0:-1])) if len(parts) >= 1 else ''
+            answer   = clean_text(parts[-1]) if len(parts) >= 2 else ''
             f.write(f"Flashcard {idx}\n")
-            f.write(f"Question: {question}\n")
+            f.write(f"Question: {question}?\n")
             f.write(f"Answer: {answer}\n\n")
 
     conn.close()
     print(f"Extracted {len(rows)} flashcards to {output_txt}")
 
 if __name__ == '__main__':
-    apkg_file = r"C:\Users\jyoth\PycharmProjects\rohan_flashcards\data\JAnki_STEP_2_internal_MedicinePART_I.apkg"
-    output_txt = r'C:\Users\jyoth\PycharmProjects\rohan_flashcards\extracted_apkg\flashcards_extracted.txt'
+    apkg_file = r"C:\Users\jyoth\PycharmProjects\apkg_flashcard_extraction\data\JAnki_STEP_2_internal_MedicinePART_I.apkg"
+    output_txt = r'C:\Users\jyoth\PycharmProjects\apkg_flashcard_extraction\final\flashcards_extracted.txt'
     read_apkg_to_txt(apkg_file, output_txt)
 
     # with open(r"C:\Users\jyoth\PycharmProjects\rohan_flashcards\final\flashcards_extracted.txt", 'r', encoding='utf-8') as f:
@@ -75,7 +86,7 @@ if __name__ == '__main__':
     flashcards = []
     current = {}
 
-    with open(r"C:\Users\jyoth\PycharmProjects\rohan_flashcards\final\flashcards_extracted.txt",
+    with open(r"C:\Users\jyoth\PycharmProjects\apkg_flashcard_extraction\final\flashcards_extracted.txt",
               'r', encoding='utf-8') as f:
         for raw in f:
             line = raw.strip()
