@@ -2,6 +2,7 @@
 data/
 extracted_apkg/
 final/
+images_out/
 
 # also ignore any .apkg decks just in case
 *.apkg

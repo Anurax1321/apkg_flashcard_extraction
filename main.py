@@ -57,17 +57,63 @@ if __name__ == '__main__':
     output_txt = r'C:\Users\jyoth\PycharmProjects\rohan_flashcards\extracted_apkg\flashcards_extracted.txt'
     read_apkg_to_txt(apkg_file, output_txt)
 
-    with open(r"C:\Users\jyoth\PycharmProjects\rohan_flashcards\final\flashcards_extracted.txt", 'r', encoding='utf-8') as f:
-        content = f.read()  # read the entire file into one string
-        # or, to read line by line:
-        # lines = f.readlines()   # returns a list of lines
-    flash = content.split("Flashcard")
-    # print(content)
-    # print(flash[0])
-    print(flash[1])
+    # with open(r"C:\Users\jyoth\PycharmProjects\rohan_flashcards\final\flashcards_extracted.txt", 'r', encoding='utf-8') as f:
+    #     content = f.read()  # read the entire file into one string
+    #     # or, to read line by line:
+    #     # lines = f.readlines()   # returns a list of lines
+    # flash = content.split("Flashcard")
+    # # print(content)
+    # # print(flash[0])
+    # print(flash[1])
     # print(flash[2])
-    # print(flash[3])
-    question = flash[1].split("Question: ")[1].split("?")[0] + "?"
-    ans = flash[1].split("Question: ")[1].split("?")[1]
-    print(f"question: {question}")
-    print(f"ans: {ans}")
+    # # print(flash[3])
+    # question = flash[1].split("Question: ")[1].split("?")[0] + "?"
+    # ans = flash[1].split("Question: ")[1].split("?")[1]
+    # print(f"question: {question}")
+    # print(f"ans: {ans}")
+
+    flashcards = []
+    current = {}
+
+    with open(r"C:\Users\jyoth\PycharmProjects\rohan_flashcards\final\flashcards_extracted.txt",
+              'r', encoding='utf-8') as f:
+        for raw in f:
+            line = raw.strip()
+            if not line:
+                # skip empty lines
+                continue
+
+            # start of a new card
+            if line.startswith("Flashcard "):
+                # push the last card, if any
+                if current:
+                    flashcards.append(current)
+                num = line.split()[1]
+                current = {
+                    "number": num,
+                    "question": "N/A",
+                    "answer": "Dumb—you don't get to know the answer for this, study better!"
+                }
+
+            # question line
+            elif line.startswith("Question:"):
+                q = line[len("Question:"):].strip()
+                if q:
+                    current["question"] = q
+
+            # answer line
+            elif line.startswith("Answer:"):
+                a = line[len("Answer:"):].strip()
+                if a:
+                    current["answer"] = a
+
+        # don’t forget the very last one
+        if current:
+            flashcards.append(current)
+
+    # Now flashcards is a list of dicts—let’s print the first two to verify:
+    for card in flashcards[:2]:
+        print(f"Flashcard {card['number']}")
+        print("  Q:", card["question"])
+        print("  A:", card["answer"])
+        print()
