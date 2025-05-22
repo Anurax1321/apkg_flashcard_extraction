@@ -1,4 +1,6 @@
 import zipfile, sqlite3, os, re, html
+
+from fpdf import FPDF
 from reportlab.lib.pagesizes import LETTER
 from reportlab.pdfgen import canvas
 
@@ -79,20 +81,42 @@ def read_apkg_to_txt(apkg_path):
         }
         flashcards.append(current)
 
-        # f.write(f"Flashcard {idx}\n")
-        # f.write(f"Question: {question}?\n")
-        # f.write(f"Answer: {answer}\n\n")
-
     conn.close()
     print(f"Extracted: {len(rows)} rows")
     print(f"Extracted: {len(flashcards)} flashcards")
-    print(flashcards[0:3])
-    print(flashcards[1]['question'])
-    print(flashcards[1]['answer'])
+    # print(flashcards[0:3])
+    # print(flashcards[1]['question'])
+    # print(flashcards[1]['answer'])
     return flashcards
+
+
+def make_flashcards_pdf(flashcards, out_path):
+    pdf = FPDF(orientation='P', unit='mm', format='Letter')
+    pdf.set_auto_page_break(False)
+    pdf.set_margins(20, 20, 20)
+
+    for card in flashcards:
+        # --- Page 1: number & question ---
+        pdf.add_page()
+        pdf.set_font('Arial', 'B', 16)
+        pdf.cell(0, 10, f"Flashcard {card['number']}", ln=True)
+        pdf.ln(5)
+        pdf.set_font('Arial', '', 14)
+        pdf.multi_cell(0, 8, card['question'])
+
+        # --- Page 2: the answer ---
+        pdf.add_page()
+        pdf.set_font('Arial', 'B', 16)
+        pdf.cell(0, 10, f"Answer to Flashcard {card['number']}", ln=True)
+        pdf.ln(5)
+        pdf.set_font('Arial', '', 14)
+        pdf.multi_cell(0, 8, card['answer'])
+
+    pdf.output(out_path)
 
 if __name__ == '__main__':
     apkg_file = r"C:\Users\jyoth\PycharmProjects\apkg_flashcard_extraction\data\JAnki_STEP_2_internal_MedicinePART_I.apkg"
     output_pdf = r'C:\Users\jyoth\PycharmProjects\apkg_flashcard_extraction\final\flashcards_extracted.pdf'
     flashcards = read_apkg_to_txt(apkg_file)
-    write_flashcards_to_pdf(flashcards, output_pdf)
+    # write_flashcards_to_pdf(flashcards, output_pdf)
+    make_flashcards_pdf(flashcards, output_pdf)
