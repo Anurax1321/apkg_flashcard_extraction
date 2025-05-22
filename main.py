@@ -1,3 +1,4 @@
+import sys
 import zipfile, sqlite3, os, re, html
 
 from fpdf import FPDF
@@ -72,11 +73,24 @@ def read_apkg_to_txt(apkg_path):
             print(parts)
             # re.findall(r'<img\s+src="([^"]+)"', parts)
         question = clean_text(''.join(parts[0:-1])) if len(parts) >= 1 else ''
-        answer   = clean_text(parts[-1]) if len(parts) >= 2 else ''
+        # if question == "":
+        #     print(question)
+        #     sys.exit(1)
+        if question.startswith("# "):
+            # print(question)
+            question = question.replace("# ", "")
+        answer= clean_text(parts[-1]) if len(parts) >= 2 else ''
+        # if answer == "":
+        #     print(answer)
+        #     sys.exit(1)
+        if "\x1f" in answer:
+            # print(answer)
+            answer = answer.replace("\x1f", " ")
+
 
         current = {
             "number": idx,
-            "question": question,
+            "question": question + "?",
             "answer": answer
         }
         flashcards.append(current)
@@ -84,9 +98,9 @@ def read_apkg_to_txt(apkg_path):
     conn.close()
     print(f"Extracted: {len(rows)} rows")
     print(f"Extracted: {len(flashcards)} flashcards")
-    # print(flashcards[0:3])
-    # print(flashcards[1]['question'])
-    # print(flashcards[1]['answer'])
+    print(flashcards[0:3])
+    print(flashcards[1]['question'])
+    print(flashcards[1]['answer'])
     return flashcards
 
 
