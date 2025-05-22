@@ -78,7 +78,7 @@ def read_apkg_to_txt(apkg_path):
         #     sys.exit(1)
         if question.startswith("# "):
             # print(question)
-            question = question.replace("# ", "")
+            question = question.replace("# ", "", 1)
         answer= clean_text(parts[-1]) if len(parts) >= 2 else ''
         # if answer == "":
         #     print(answer)
@@ -107,26 +107,29 @@ def read_apkg_to_txt(apkg_path):
 
 
 def make_flashcards_pdf(flashcards, out_path):
-    pdf = FPDF(orientation='P', unit='mm', format='Letter')
-    pdf.set_auto_page_break(False)
-    pdf.set_margins(20, 20, 20)
+    pdf = FPDF()
+    pdf.add_page()
+
+    # ✅ Use a Unicode TrueType font (must exist on your system or project)
+    pdf.add_font("DejaVu", "", "DejaVuSans.ttf", uni=True)
+    pdf.set_font("DejaVu", size=12)
 
     for card in flashcards:
-        # --- Page 1: number & question ---
+        # Question page
         pdf.add_page()
-        pdf.set_font('Arial', 'B', 16)
-        pdf.cell(0, 10, f"Flashcard {card['number']}", ln=True)
-        pdf.ln(5)
-        pdf.set_font('Arial', '', 14)
-        pdf.multi_cell(0, 8, card['question'])
+        pdf.set_font("DejaVu", "B", 14)
+        pdf.multi_cell(0, 10, f"Flashcard {card['number']}:")
+        pdf.ln(2)
+        pdf.set_font("DejaVu", "", 12)
+        pdf.multi_cell(0, 8, card["question"])
 
-        # --- Page 2: the answer ---
+        # Answer page
         pdf.add_page()
-        pdf.set_font('Arial', 'B', 16)
-        pdf.cell(0, 10, f"Answer to Flashcard {card['number']}", ln=True)
-        pdf.ln(5)
-        pdf.set_font('Arial', '', 14)
-        pdf.multi_cell(0, 8, card['answer'])
+        pdf.set_font("DejaVu", "B", 14)
+        pdf.multi_cell(0, 10, f"Answer to Flashcard {card['number']}:")
+        pdf.ln(2)
+        pdf.set_font("DejaVu", "", 12)
+        pdf.multi_cell(0, 8, card["answer"])
 
     pdf.output(out_path)
 
