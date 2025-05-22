@@ -67,13 +67,11 @@ def read_apkg_to_txt(apkg_path):
     rows = cursor.fetchall()
 
     flashcards =[]
-    img = None
     for idx, (flds,) in enumerate(rows, start=1):
         parts = flds.split('?')
-        if idx in (1, 2):
-            print(parts)
-            img = re.findall(r'<img\s+src="([^"]+)"', ''.join(parts))
-            print(img)
+        # if idx in (1, 2):
+        #     print(parts)
+        img = re.findall(r'<img\s+src="([^"]+)"', ''.join(parts))
         question = clean_text(''.join(parts[0:-1])) if len(parts) >= 1 else ''
         # if question == "":
         #     print(question)
@@ -104,6 +102,7 @@ def read_apkg_to_txt(apkg_path):
     print(flashcards[0:3])
     print(flashcards[1]['question'])
     print(flashcards[1]['answer'])
+    print(flashcards[1]['image'])
     return flashcards
 
 
